@@ -36,7 +36,7 @@
 #if defined(DEBUG) && !defined(LOCAL_DEBUG)
 #define LOCAL_DEBUG
 #else
-//#define LOCAL_DEBUG // This enables debug output only for this file
+// #define LOCAL_DEBUG // This enables debug output only for this file
 #endif
 
 /** \addtogroup Receiving Receiving IR data for multiple protocols
@@ -74,33 +74,36 @@ const char string_Lego[] PROGMEM = "Lego";
 const char string_MagiQuest[] PROGMEM = "MagiQuest";
 const char string_Whynter[] PROGMEM = "Whynter";
 const char string_FAST[] PROGMEM = "FAST";
+const char string_Milestag2[] PROGMEM = "Milestag2";
 
 /*
  * !!Must be the same order as in decode_type_t in IRProtocol.h!!!
  */
-const char *const ProtocolNames[]
-PROGMEM = { string_Unknown, string_PulseWidth, string_PulseDistance, string_Apple, string_Denon, string_JVC, string_LG, string_LG2,
-        string_NEC, string_NEC2, string_Onkyo, string_Panasonic, string_Kaseikyo, string_Kaseikyo_Denon, string_Kaseikyo_Sharp,
-        string_Kaseikyo_JVC, string_Kaseikyo_Mitsubishi, string_RC5, string_RC6, string_RC6A, string_Samsung, string_SamsungLG, string_Samsung48,
-        string_Sharp, string_Sony
+const char *const ProtocolNames[] PROGMEM = {string_Unknown, string_PulseWidth, string_PulseDistance, string_Apple, string_Denon, string_JVC, string_LG, string_LG2,
+                                             string_NEC, string_NEC2, string_Onkyo, string_Panasonic, string_Kaseikyo, string_Kaseikyo_Denon, string_Kaseikyo_Sharp,
+                                             string_Kaseikyo_JVC, string_Kaseikyo_Mitsubishi, string_RC5, string_RC6, string_RC6A, string_Samsung, string_SamsungLG, string_Samsung48,
+                                             string_Sharp, string_Sony
 #if !defined(EXCLUDE_EXOTIC_PROTOCOLS)
-        , string_BangOlufsen, string_BoseWave, string_Lego, string_MagiQuest, string_Whynter, string_FAST
+                                             ,
+                                             string_BangOlufsen, string_BoseWave, string_Lego, string_MagiQuest, string_Whynter, string_FAST, string_Milestag2
 #endif
-        };
+};
 
 #if defined(__AVR__)
-const __FlashStringHelper* getProtocolString(decode_type_t aProtocol) {
-    const char *tProtocolStringPtr = (char*) pgm_read_word(&ProtocolNames[aProtocol]);
-    return ((__FlashStringHelper*) (tProtocolStringPtr));
+const __FlashStringHelper *getProtocolString(decode_type_t aProtocol)
+{
+    const char *tProtocolStringPtr = (char *)pgm_read_word(&ProtocolNames[aProtocol]);
+    return ((__FlashStringHelper *)(tProtocolStringPtr));
 }
 #else
-const char* getProtocolString(decode_type_t aProtocol) {
+const char *getProtocolString(decode_type_t aProtocol)
+{
     return ProtocolNames[aProtocol];
 }
 #endif
 
 #if (__INT_WIDTH__ >= 32)
-#  if __has_include(<type_traits>)
+#if __has_include(<type_traits>)
 /*
  * This code to handle the missing print(unsigned long long...) function of seeduino core was contributed by sklott
  * https://stackoverflow.com/questions/74622227/avoid-calling-of-function-size-t-printprintunsigned-long-long-n-int-base-if
@@ -109,45 +112,54 @@ const char* getProtocolString(decode_type_t aProtocol) {
 
 // If you have C++17 you can just use std::void_t, or use this for all versions
 #if __cpp_lib_void_t >= 201411L
-template<typename T>
+template <typename T>
 using void_t = std::void_t<T>;
 #else
-template<typename ... Ts> struct make_void {
+template <typename... Ts>
+struct make_void
+{
     typedef void type;
 };
-template<typename ... Ts> using void_t = typename make_void<Ts...>::type;
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
 #endif
 
 // Detecting if we have print(unsigned long long value, int base) / print(0ull, 0) overload
-template<typename T, typename = void>
-struct has_ull_print: std::false_type {
+template <typename T, typename = void>
+struct has_ull_print : std::false_type
+{
 };
-template<typename T>
-struct has_ull_print<T, void_t<decltype(std::declval<T>().print(0ull, 0))>> : std::true_type {
+template <typename T>
+struct has_ull_print<T, void_t<decltype(std::declval<T>().print(0ull, 0))>> : std::true_type
+{
 };
 
 // Must be namespace, to avoid public and static declarations for class
-namespace PrintULL {
-template<typename PrintImplType, typename std::enable_if<!has_ull_print<PrintImplType>::value, bool>::type = true>
-size_t print(PrintImplType *p, unsigned long long value, int base) {
-    size_t tLength = p->print(static_cast<uint32_t>(value >> 32), base);
-    tLength += p->print(static_cast<uint32_t>(value), base);
-    return tLength;
-}
+namespace PrintULL
+{
+    template <typename PrintImplType, typename std::enable_if<!has_ull_print<PrintImplType>::value, bool>::type = true>
+    size_t print(PrintImplType *p, unsigned long long value, int base)
+    {
+        size_t tLength = p->print(static_cast<uint32_t>(value >> 32), base);
+        tLength += p->print(static_cast<uint32_t>(value), base);
+        return tLength;
+    }
 
-template<typename PrintImplType, typename std::enable_if<has_ull_print<PrintImplType>::value, bool>::type = true>
-size_t print(PrintImplType *p, unsigned long long value, int base) {
-    return p->print(value, base);
-}
-}
-;
-#  else
-namespace PrintULL {
-    size_t print(Print *aSerial, unsigned long long n, int base) {
+    template <typename PrintImplType, typename std::enable_if<has_ull_print<PrintImplType>::value, bool>::type = true>
+    size_t print(PrintImplType *p, unsigned long long value, int base)
+    {
+        return p->print(value, base);
+    }
+};
+#else
+namespace PrintULL
+{
+    size_t print(Print *aSerial, unsigned long long n, int base)
+    {
         return aSerial->print(n, base);
     }
 };
-#  endif
+#endif
 #endif
 
 /**
@@ -160,20 +172,23 @@ namespace PrintULL {
  * @param aPrintRepeatGap   If true also print the gap before repeats.
  *
  */
-void printIRResultShort(Print *aSerial, IRData *aIRDataPtr, bool aPrintRepeatGap) {
-    if (aIRDataPtr->flags & IRDATA_FLAGS_WAS_OVERFLOW) {
+void printIRResultShort(Print *aSerial, IRData *aIRDataPtr, bool aPrintRepeatGap)
+{
+    if (aIRDataPtr->flags & IRDATA_FLAGS_WAS_OVERFLOW)
+    {
         aSerial->println(F("Overflow"));
         return;
     }
     aSerial->print(F("Protocol="));
     aSerial->print(getProtocolString(aIRDataPtr->protocol));
-    if (aIRDataPtr->protocol == UNKNOWN) {
+    if (aIRDataPtr->protocol == UNKNOWN)
+    {
 #if defined(DECODE_HASH)
         aSerial->print(F(" Hash=0x"));
 #if (__INT_WIDTH__ < 32)
         aSerial->print(aIRDataPtr->decodedRawData, HEX);
 #else
-        PrintULL::print(aSerial,aIRDataPtr->decodedRawData, HEX);
+        PrintULL::print(aSerial, aIRDataPtr->decodedRawData, HEX);
 #endif
 
 #endif
@@ -182,44 +197,53 @@ void printIRResultShort(Print *aSerial, IRData *aIRDataPtr, bool aPrintRepeatGap
         aSerial->print((aIRDataPtr->rawlen + 1) / 2, DEC);
         aSerial->println(F(" bits (incl. gap and start) received"));
 #endif
-    } else {
+    }
+    else
+    {
 #if defined(DECODE_DISTANCE_WIDTH)
-        if (aIRDataPtr->protocol != PULSE_DISTANCE && aIRDataPtr->protocol != PULSE_WIDTH) {
+        if (aIRDataPtr->protocol != PULSE_DISTANCE && aIRDataPtr->protocol != PULSE_WIDTH)
+        {
 #endif
-        /*
-         * New decoders have address and command
-         */
-        aSerial->print(F(" Address=0x"));
-        aSerial->print(aIRDataPtr->address, HEX);
+            /*
+             * New decoders have address and command
+             */
+            aSerial->print(F(" Address=0x"));
+            aSerial->print(aIRDataPtr->address, HEX);
 
-        aSerial->print(F(" Command=0x"));
-        aSerial->print(aIRDataPtr->command, HEX);
+            aSerial->print(F(" Command=0x"));
+            aSerial->print(aIRDataPtr->command, HEX);
 
-        if (aIRDataPtr->flags & IRDATA_FLAGS_EXTRA_INFO) {
-            aSerial->print(F(" Extra=0x"));
-            aSerial->print(aIRDataPtr->extra, HEX);
-        }
+            if (aIRDataPtr->flags & IRDATA_FLAGS_EXTRA_INFO)
+            {
+                aSerial->print(F(" Extra=0x"));
+                aSerial->print(aIRDataPtr->extra, HEX);
+            }
 
-        if (aIRDataPtr->flags & IRDATA_FLAGS_PARITY_FAILED) {
-            aSerial->print(F(" Parity fail"));
-        }
+            if (aIRDataPtr->flags & IRDATA_FLAGS_PARITY_FAILED)
+            {
+                aSerial->print(F(" Parity fail"));
+            }
 
-        if (aIRDataPtr->flags & IRDATA_FLAGS_TOGGLE_BIT) {
-            aSerial->print(F(" Toggle=1"));
-        }
+            if (aIRDataPtr->flags & IRDATA_FLAGS_TOGGLE_BIT)
+            {
+                aSerial->print(F(" Toggle=1"));
+            }
 #if defined(DECODE_DISTANCE_WIDTH)
         }
 #endif
-        if (aIRDataPtr->flags & (IRDATA_FLAGS_IS_AUTO_REPEAT | IRDATA_FLAGS_IS_REPEAT)) {
+        if (aIRDataPtr->flags & (IRDATA_FLAGS_IS_AUTO_REPEAT | IRDATA_FLAGS_IS_REPEAT))
+        {
             aSerial->print(' ');
-            if (aIRDataPtr->flags & IRDATA_FLAGS_IS_AUTO_REPEAT) {
+            if (aIRDataPtr->flags & IRDATA_FLAGS_IS_AUTO_REPEAT)
+            {
                 aSerial->print(F("Auto-"));
             }
             aSerial->print(F("Repeat"));
 #if !defined(DISABLE_CODE_FOR_RECEIVER)
-            if (aPrintRepeatGap) {
+            if (aPrintRepeatGap)
+            {
                 aSerial->print(F(" gap="));
-                aSerial->print((uint32_t) aIRDataPtr->initialGapTicks * MICROS_PER_TICK);
+                aSerial->print((uint32_t)aIRDataPtr->initialGapTicks * MICROS_PER_TICK);
                 aSerial->print(F("us"));
             }
 #else
@@ -230,7 +254,8 @@ void printIRResultShort(Print *aSerial, IRData *aIRDataPtr, bool aPrintRepeatGap
         /*
          * Print raw data
          */
-        if (!(aIRDataPtr->flags & IRDATA_FLAGS_IS_REPEAT) || aIRDataPtr->decodedRawData != 0) {
+        if (!(aIRDataPtr->flags & IRDATA_FLAGS_IS_REPEAT) || aIRDataPtr->decodedRawData != 0)
+        {
             aSerial->print(F(" Raw-Data=0x"));
 #if (__INT_WIDTH__ < 32)
             aSerial->print(aIRDataPtr->decodedRawData, HEX);
@@ -244,13 +269,17 @@ void printIRResultShort(Print *aSerial, IRData *aIRDataPtr, bool aPrintRepeatGap
             aSerial->print(aIRDataPtr->numberOfBits, DEC);
             aSerial->print(F(" bits"));
 
-            if (aIRDataPtr->flags & IRDATA_FLAGS_IS_MSB_FIRST) {
+            if (aIRDataPtr->flags & IRDATA_FLAGS_IS_MSB_FIRST)
+            {
                 aSerial->println(F(" MSB first"));
-            } else {
+            }
+            else
+            {
                 aSerial->println(F(" LSB first"));
             }
-
-        } else {
+        }
+        else
+        {
             aSerial->println();
         }
     }
@@ -259,21 +288,23 @@ void printIRResultShort(Print *aSerial, IRData *aIRDataPtr, bool aPrintRepeatGap
 /**********************************************************************************************************************
  * Function to bit reverse OLD MSB values of e.g. NEC.
  **********************************************************************************************************************/
-uint8_t bitreverseOneByte(uint8_t aValue) {
-//    uint8_t tReversedValue;
-//    return __builtin_avr_insert_bits(0x01234567, aValue, tReversedValue);
-// 76543210
-    aValue = (aValue >> 4) | (aValue << 4); // Swap in groups of 4
-// 32107654
+uint8_t bitreverseOneByte(uint8_t aValue)
+{
+    //    uint8_t tReversedValue;
+    //    return __builtin_avr_insert_bits(0x01234567, aValue, tReversedValue);
+    // 76543210
+    aValue = (aValue >> 4) | (aValue << 4);                   // Swap in groups of 4
+                                                              // 32107654
     aValue = ((aValue & 0xcc) >> 2) | ((aValue & 0x33) << 2); // Swap in groups of 2
-// 10325476
+                                                              // 10325476
     aValue = ((aValue & 0xaa) >> 1) | ((aValue & 0x55) << 1); // Swap bit pairs
-// 01234567
+                                                              // 01234567
     return aValue;
 }
 
-uint32_t bitreverse32Bit(uint32_t aInput) {
-//    __builtin_avr_insert_bits();
+uint32_t bitreverse32Bit(uint32_t aInput)
+{
+    //    __builtin_avr_insert_bits();
     LongUnion tValue;
     tValue.UByte.HighByte = bitreverseOneByte(aInput);
     tValue.UByte.MidHighByte = bitreverseOneByte(aInput >> 8);

@@ -8,9 +8,6 @@
 #ifndef _IR_MILESTAG2_HPP
 #define _IR_MILESTAG2_HPP
 
-#include <Arduino.h>
-#include "IRremote.h"
-
 // MilesTag2-Konstanten
 #define MILESTAG2_SHOT_BITS 14
 #define MILESTAG2_MSG_BITS 24
@@ -36,7 +33,7 @@ struct PulseDistanceWidthProtocolConstants MilesTag2ProtocolConstants =
       MILESTAG2_SPACE,
       MILESTAG2_ZERO_MARK,
       MILESTAG2_SPACE},
-     PROTOCOL_IS_MSB_FIRST,
+     PROTOCOL_IS_MSB_FIRST | SUPPRESS_STOP_BIT,
      MILESTAG2_REPEATT_LENGTH,
      NULL};
 
@@ -52,34 +49,43 @@ bool IRrecv::decodeMilesTag2()
     if (!checkHeader(&MilesTag2ProtocolConstants))
         return false;
 
-    // Bestimmen der Anzahl der Bits
-    uint16_t nbits = (decodedIRData.rawlen > 30) ? MILESTAG2_MSG_BITS : MILESTAG2_SHOT_BITS;
-
-    if (!decodePulseDistanceWidthData(&MilesTag2ProtocolConstants, nbits))
+    if (decodedIRData.rawlen != (2 * MILESTAG2_SHOT_BITS) + 2 && decodedIRData.rawlen != (2 * MILESTAG2_MSG_BITS) + 2)
+    {
+        IR_DEBUG_PRINT(F("Milestag2: "));
+        IR_DEBUG_PRINT(F("Data length="));
+        IR_DEBUG_PRINT(decodedIRData.rawlen);
+        IR_DEBUG_PRINTLN(F(" is not 14 or 24"));
         return false;
+    }
 
-    decodedIRData.numberOfBits = nbits;
+    if (!decodePulseDistanceWidthData(&MilesTag2ProtocolConstants, (decodedIRData.rawlen - 1) / 2))
+    {
+        IR_DEBUG_PRINT(F("Milestag2: "));
+        IR_DEBUG_PRINT(F("Data length="));
+        IR_DEBUG_PRINT(decodedIRData.rawlen);
+        IR_DEBUG_PRINTLN(F(" is not 14 or 24"));
+        return false;
+    }
+
+    decodedIRData.numberOfBits = (decodedIRData.rawlen - 1) / 2;
     decodedIRData.protocol = MILESTAG2;
+    decodedIRData.flags = MilesTag2ProtocolConstants.Flags;
     uint32_t data = decodedIRData.decodedRawData;
 
     // Prüfen auf SHOT oder MSG Paket
-    if (nbits == MILESTAG2_SHOT_BITS)
+    if ((decodedIRData.rawlen - 1) / 2 == MILESTAG2_SHOT_BITS)
     {
         if (data & MILESTAG2_SHOT_MASK)
             return false;                    // SHOT-Pakete müssen `0` am MSB haben.
         decodedIRData.command = data & 0x3F; // Team & Damage
         decodedIRData.address = data >> 6;   // Player ID
     }
-    else if (nbits == MILESTAG2_MSG_BITS)
+    else if ((decodedIRData.rawlen - 1) / 2 == MILESTAG2_MSG_BITS)
     {
         if (!(data & MILESTAG2_MSG_MASK) || ((data & 0xFF) != MILESTAG2_MSG_TERMINATOR))
             return false;
         decodedIRData.command = (data >> 8) & 0xFF;  // MSG Daten
         decodedIRData.address = (data >> 16) & 0x7F; // MSG ID
-    }
-    else
-    {
-        return false; // Ungültige Bitlänge
     }
 
     checkForRepeatSpaceTicksAndSetFlag(MILESTAG2_REPEATT_LENGTH / MICROS_PER_TICK);

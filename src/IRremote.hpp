@@ -68,12 +68,12 @@
 #include "IRVersion.h"
 
 // activate it for all cores that does not use the -flto flag, if you get false error messages regarding begin() during compilation.
-//#define SUPPRESS_ERROR_MESSAGE_FOR_BEGIN
+// #define SUPPRESS_ERROR_MESSAGE_FOR_BEGIN
 
 /*
  * If activated, BANG_OLUFSEN, BOSEWAVE, MAGIQUEST, WHYNTER, FAST and LEGO_PF are excluded in decoding and in sending with IrSender.write
  */
-//#define EXCLUDE_EXOTIC_PROTOCOLS
+// #define EXCLUDE_EXOTIC_PROTOCOLS
 /****************************************************
  *                     PROTOCOLS
  ****************************************************/
@@ -85,47 +85,44 @@
  */
 
 #if !defined(NO_DECODER) // for sending raw only
-#  if (!(defined(DECODE_DENON) || defined(DECODE_JVC) || defined(DECODE_KASEIKYO) \
-|| defined(DECODE_PANASONIC) || defined(DECODE_LG) || defined(DECODE_NEC) || defined(DECODE_ONKYO) || defined(DECODE_SAMSUNG) \
-|| defined(DECODE_SONY) || defined(DECODE_RC5) || defined(DECODE_RC6) \
-|| defined(DECODE_DISTANCE_WIDTH) || defined(DECODE_HASH) || defined(DECODE_BOSEWAVE) \
-|| defined(DECODE_LEGO_PF) || defined(DECODE_MAGIQUEST) || defined(DECODE_FAST) || defined(DECODE_WHYNTER)))
+#if (!(defined(DECODE_DENON) || defined(DECODE_JVC) || defined(DECODE_KASEIKYO) || defined(DECODE_PANASONIC) || defined(DECODE_LG) || defined(DECODE_NEC) || defined(DECODE_ONKYO) || defined(DECODE_SAMSUNG) || defined(DECODE_SONY) || defined(DECODE_RC5) || defined(DECODE_RC6) || defined(DECODE_DISTANCE_WIDTH) || defined(DECODE_HASH) || defined(DECODE_BOSEWAVE) || defined(DECODE_LEGO_PF) || defined(DECODE_MAGIQUEST) || defined(DECODE_FAST) || defined(DECODE_WHYNTER) || defined(DECODE_MILESTAG2)))
 /*
  * If no protocol is explicitly enabled, we enable all protocols
  */
-#define DECODE_DENON        // Includes Sharp
+#define DECODE_DENON // Includes Sharp
 #define DECODE_JVC
 #define DECODE_KASEIKYO
-#define DECODE_PANASONIC    // alias for DECODE_KASEIKYO
+#define DECODE_PANASONIC // alias for DECODE_KASEIKYO
 #define DECODE_LG
-#define DECODE_NEC          // Includes Apple and Onkyo
+#define DECODE_NEC // Includes Apple and Onkyo
 #define DECODE_SAMSUNG
 #define DECODE_SONY
 #define DECODE_RC5
 #define DECODE_RC6
 
-#    if !defined(EXCLUDE_EXOTIC_PROTOCOLS) // saves around 2000 bytes program memory
+#if !defined(EXCLUDE_EXOTIC_PROTOCOLS) // saves around 2000 bytes program memory
 #define DECODE_BOSEWAVE
 #define DECODE_LEGO_PF
 #define DECODE_MAGIQUEST
 #define DECODE_WHYNTER
 #define DECODE_FAST
-#    endif
+#define DECODE_MILESTAG2
+#endif
 
-#    if !defined(EXCLUDE_UNIVERSAL_PROTOCOLS)
-#define DECODE_DISTANCE_WIDTH     // universal decoder for pulse distance width protocols - requires up to 750 bytes additional program memory
-#define DECODE_HASH         // special decoder for all protocols - requires up to 250 bytes additional program memory
-#    endif
-#  endif
+#if !defined(EXCLUDE_UNIVERSAL_PROTOCOLS)
+#define DECODE_DISTANCE_WIDTH // universal decoder for pulse distance width protocols - requires up to 750 bytes additional program memory
+#define DECODE_HASH           // special decoder for all protocols - requires up to 250 bytes additional program memory
+#endif
+#endif
 #endif // !defined(NO_DECODER)
 
-//#define DECODE_BEO // Bang & Olufsen protocol always must be enabled explicitly. It prevents decoding of SONY!
+// #define DECODE_BEO // Bang & Olufsen protocol always must be enabled explicitly. It prevents decoding of SONY!
 
 #if defined(DECODE_NEC) && !(~(~DECODE_NEC + 0) == 0 && ~(~DECODE_NEC + 1) == 1)
 #warning "The macros DECODE_XXX no longer require a value. Decoding is now switched by defining / non defining the macro."
 #endif
 
-//#define DEBUG // Activate this for lots of lovely debug output from the IRremote core.
+// #define DEBUG // Activate this for lots of lovely debug output from the IRremote core.
 
 /****************************************************
  *                    RECEIVING
@@ -147,7 +144,7 @@
  */
 #if !defined(MARK_EXCESS_MICROS)
 // To change this value, you simply can add a line #define "MARK_EXCESS_MICROS <My_new_value>" in your ino file before the line "#include <IRremote.hpp>"
-#define MARK_EXCESS_MICROS    20
+#define MARK_EXCESS_MICROS 20
 #endif
 
 /**
@@ -159,29 +156,29 @@
 #if !defined(RECORD_GAP_MICROS)
 // To change this value, you simply can add a line #define "RECORD_GAP_MICROS <My_new_value>" in your *.ino file before the line "#include <IRremote.hpp>"
 // Maximum value for RECORD_GAP_MICROS, which fit into 8 bit buffer, using 50 us as tick, is 12750
-#define RECORD_GAP_MICROS   8000 // RECS80 (https://www.mikrocontroller.net/articles/IRMP#RECS80) 1 bit space is 7500µs , NEC header space is 4500
+#define RECORD_GAP_MICROS 8000 // RECS80 (https://www.mikrocontroller.net/articles/IRMP#RECS80) 1 bit space is 7500µs , NEC header space is 4500
 #endif
 /**
  * Threshold for warnings at printIRResult*() to report about changing the RECORD_GAP_MICROS value to a higher value.
  */
 #if !defined(RECORD_GAP_MICROS_WARNING_THRESHOLD)
 // To change this value, you simply can add a line #define "RECORD_GAP_MICROS_WARNING_THRESHOLD <My_new_value>" in your *.ino file before the line "#include <IRremote.hpp>"
-#define RECORD_GAP_MICROS_WARNING_THRESHOLD   15000
+#define RECORD_GAP_MICROS_WARNING_THRESHOLD 15000
 #endif
 
 /** Minimum gap between IR transmissions, in MICROS_PER_TICK */
-#define RECORD_GAP_TICKS    (RECORD_GAP_MICROS / MICROS_PER_TICK)
+#define RECORD_GAP_TICKS (RECORD_GAP_MICROS / MICROS_PER_TICK)
 
 /*
  * Activate this line if your receiver has an external output driver transistor / "inverted" output
  */
-//#define IR_INPUT_IS_ACTIVE_HIGH
+// #define IR_INPUT_IS_ACTIVE_HIGH
 #if defined(IR_INPUT_IS_ACTIVE_HIGH)
 // IR detector output is active high
-#define INPUT_MARK   1 ///< Sensor output for a mark ("flash")
+#define INPUT_MARK 1 ///< Sensor output for a mark ("flash")
 #else
 // IR detector output is active low
-#define INPUT_MARK   0 ///< Sensor output for a mark ("flash")
+#define INPUT_MARK 0 ///< Sensor output for a mark ("flash")
 #endif
 /****************************************************
  *                     SENDING
@@ -189,26 +186,26 @@
 /**
  * Define to disable carrier PWM generation in software and use (restricted) hardware PWM.
  */
-//#define SEND_PWM_BY_TIMER // restricts send pin on many platforms to fixed pin numbers
+// #define SEND_PWM_BY_TIMER // restricts send pin on many platforms to fixed pin numbers
 #if (defined(ESP32) || defined(ARDUINO_ARCH_RP2040) || defined(PARTICLE)) || defined(ARDUINO_ARCH_MBED)
-#  if !defined(SEND_PWM_BY_TIMER)
-#define SEND_PWM_BY_TIMER       // the best and default method for ESP32 etc.
+#if !defined(SEND_PWM_BY_TIMER)
+#define SEND_PWM_BY_TIMER // the best and default method for ESP32 etc.
 #warning INFO: For ESP32, RP2040, mbed and particle boards SEND_PWM_BY_TIMER is enabled by default, since we have the resources and timing is more exact than the software generated one. If this is not intended, deactivate the line in IRremote.hpp over this warning message in file IRremote.hpp.
-#  endif
+#endif
 #else
-#  if defined(SEND_PWM_BY_TIMER)
-#    if defined(IR_SEND_PIN)
+#if defined(SEND_PWM_BY_TIMER)
+#if defined(IR_SEND_PIN)
 #undef IR_SEND_PIN // to avoid warning 3 lines later
 #warning Since SEND_PWM_BY_TIMER is defined, the existing value of IR_SEND_PIN is discarded and replaced by the value determined by timer used for PWM generation
-#    endif
-#define IR_SEND_PIN     DeterminedByTimer // must be set here, since it is evaluated at IRremoteInt.h, before the include of private/IRTimer.hpp
-#  endif
+#endif
+#define IR_SEND_PIN DeterminedByTimer // must be set here, since it is evaluated at IRremoteInt.h, before the include of private/IRTimer.hpp
+#endif
 #endif
 
 /**
  * Define to use no carrier PWM, just simulate an active low receiver signal.
  */
-//#define USE_NO_SEND_PWM
+// #define USE_NO_SEND_PWM
 #if defined(SEND_PWM_BY_TIMER) && defined(USE_NO_SEND_PWM)
 #warning "SEND_PWM_BY_TIMER and USE_NO_SEND_PWM are both defined -> undefine SEND_PWM_BY_TIMER now!"
 #undef SEND_PWM_BY_TIMER // USE_NO_SEND_PWM overrides SEND_PWM_BY_TIMER
@@ -218,7 +215,7 @@
  * Define to use or simulate open drain output mode at send pin.
  * Attention, active state of open drain is LOW, so connect the send LED between positive supply and send pin!
  */
-//#define USE_OPEN_DRAIN_OUTPUT_FOR_SEND_PIN
+// #define USE_OPEN_DRAIN_OUTPUT_FOR_SEND_PIN
 #if defined(USE_OPEN_DRAIN_OUTPUT_FOR_SEND_PIN) && !defined(OUTPUT_OPEN_DRAIN)
 #warning Pin mode OUTPUT_OPEN_DRAIN is not supported on this platform -> mimick open drain mode by switching between INPUT and OUTPUT mode.
 #endif
@@ -228,26 +225,26 @@
  * Measured value for Nano @16MHz is around 3000, for Bluepill @72MHz is around 700, for Zero 3600
  */
 #if !defined(PULSE_CORRECTION_NANOS)
-#  if defined(F_CPU)
+#if defined(F_CPU)
 // To change this value, you simply can add a line #define "PULSE_CORRECTION_NANOS <My_new_value>" in your ino file before the line "#include <IRremote.hpp>"
-#define PULSE_CORRECTION_NANOS (48000L / (F_CPU/MICROS_IN_ONE_SECOND)) // 3000 @16MHz, 666 @72MHz
-#  else
+#define PULSE_CORRECTION_NANOS (48000L / (F_CPU / MICROS_IN_ONE_SECOND)) // 3000 @16MHz, 666 @72MHz
+#else
 #define PULSE_CORRECTION_NANOS 600
-#  endif
+#endif
 #endif
 
 /**
  * Duty cycle in percent for sent signals.
  */
-#if ! defined(IR_SEND_DUTY_CYCLE_PERCENT)
+#if !defined(IR_SEND_DUTY_CYCLE_PERCENT)
 #define IR_SEND_DUTY_CYCLE_PERCENT 30 // 30 saves power and is compatible to the old existing code
 #endif
 
 /**
  * microseconds per clock interrupt tick
  */
-#if ! defined(MICROS_PER_TICK)
-#define MICROS_PER_TICK    50L // must be with L to get 32 bit results if multiplied with rawbuf[] content.
+#if !defined(MICROS_PER_TICK)
+#define MICROS_PER_TICK 50L // must be with L to get 32 bit results if multiplied with rawbuf[] content.
 #endif
 
 #define MILLIS_IN_ONE_SECOND 1000L
@@ -262,19 +259,19 @@
 #include "digitalWriteFast.h"
 
 #if !defined(USE_IRREMOTE_HPP_AS_PLAIN_INCLUDE)
-#include "private/IRTimer.hpp"  // defines IR_SEND_PIN for AVR and SEND_PWM_BY_TIMER
+#include "private/IRTimer.hpp" // defines IR_SEND_PIN for AVR and SEND_PWM_BY_TIMER
 
-#  if !defined(NO_LED_FEEDBACK_CODE)
-#    if !defined(LED_BUILTIN)
+#if !defined(NO_LED_FEEDBACK_CODE)
+#if !defined(LED_BUILTIN)
 /*
  * print a warning
  */
 #warning INFO: No definition for LED_BUILTIN found -> default LED feedback is disabled.
-#    endif
+#endif
 #include "IRFeedbackLED.hpp"
-#  else
+#else
 void disableLEDFeedback() {}; // dummy function for examples
-#  endif
+#endif
 
 #include "LongUnion.h" // used in most decoders
 
@@ -304,16 +301,17 @@ void disableLEDFeedback() {}; // dummy function for examples
 #include "ir_Sony.hpp"
 #include "ir_FAST.hpp"
 #include "ir_Others.hpp"
-#include "ir_Pronto.hpp" // pronto is an universal decoder and encoder
-#  if defined(DECODE_DISTANCE_WIDTH)     // universal decoder for pulse distance width protocols - requires up to 750 bytes additional program memory
+#include "ir_MilesTag2.hpp"
+#include "ir_Pronto.hpp"           // pronto is an universal decoder and encoder
+#if defined(DECODE_DISTANCE_WIDTH) // universal decoder for pulse distance width protocols - requires up to 750 bytes additional program memory
 #include "ir_DistanceWidthProtocol.hpp"
-#  endif
+#endif
 #endif // #if !defined(USE_IRREMOTE_HPP_AS_PLAIN_INCLUDE)
 
 /**
  * Macros for legacy compatibility
  */
-#define RAWBUF  101  // Maximum length of raw duration buffer
+#define RAWBUF 101 // Maximum length of raw duration buffer
 #define REPEAT 0xFFFFFFFF
 #define USECPERTICK MICROS_PER_TICK
 #define MARK_EXCESS MARK_EXCESS_MICROS
