@@ -12,17 +12,18 @@
 #define MILESTAG2_SHOT_BITS 14
 #define MILESTAG2_MSG_BITS 24
 
+#define MILESTAG_UNIT 600 // The smalles pulse width is 600us or approx. 23 periods with 38khz modulation
+#define MILESTAG2_KHZ 38
+
 #define MILESTAG2_SHOT_MASK (1 << (MILESTAG2_SHOT_BITS - 1))
 #define MILESTAG2_MSG_MASK (1 << (MILESTAG2_MSG_BITS - 1))
 #define MILESTAG2_MSG_TERMINATOR 0xE8
 
-#define MILESTAG2_HEADER_MARK 2400
-#define MILESTAG2_SPACE 600
-#define MILESTAG2_ONE_MARK 1200
-#define MILESTAG2_ZERO_MARK 600
+#define MILESTAG2_HEADER_MARK (4 * MILESTAG_UNIT) 
+#define MILESTAG2_SPACE  MILESTAG_UNIT
+#define MILESTAG2_ONE_MARK (2 * MILESTAG_UNIT)
+#define MILESTAG2_ZERO_MARK MILESTAG_UNIT
 #define MILESTAG2_REPEATT_LENGTH 32000
-#define MILESTAG2_KHZ 38
-#define MILESTAG2_MESSAGE_TERMINATOR 0xE
 
 struct PulseDistanceWidthProtocolConstants MilesTag2ProtocolConstants =
     {MILESTAG2,
@@ -34,7 +35,7 @@ struct PulseDistanceWidthProtocolConstants MilesTag2ProtocolConstants =
       MILESTAG2_ZERO_MARK,
       MILESTAG2_SPACE},
      PROTOCOL_IS_MSB_FIRST | SUPPRESS_STOP_BIT,
-     MILESTAG2_REPEATT_LENGTH,
+     (MILESTAG2_REPEATT_LENGTH / MICROS_IN_ONE_MILLI),
      NULL};
 
 // Send a MilesTag2 Packet ( 14bit for shot and 24 bit for message )
@@ -75,7 +76,7 @@ bool IRrecv::decodeMilesTag2()
     // Prüfen auf SHOT oder MSG Paket
     if ((decodedIRData.rawlen - 1) / 2 == MILESTAG2_SHOT_BITS)
     {
-        if (data & MILESTAG2_SHOT_MASK)
+        if (data & MILESTAG2_SHOT_MASK)       //Check if the MSB is set
             return false;                    // SHOT-Pakete müssen `0` am MSB haben.
         decodedIRData.command = data & 0x3F; // Team & Damage
         decodedIRData.address = data >> 6;   // Player ID

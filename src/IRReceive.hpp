@@ -1546,6 +1546,9 @@ void printActiveIRProtocols(Print *aSerial)
 #if defined(DECODE_DISTANCE_WIDTH)
     aSerial->print(F("Universal Pulse Distance Width, "));
 #endif
+#if defined(DECODE_MILESTAG2)
+    aSerial->print(F("Milestag2, "));
+#endif
 #if defined(DECODE_HASH)
     aSerial->print(F("Hash "));
 #endif
